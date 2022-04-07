@@ -37,7 +37,7 @@ export class MySQLClient {
           if (curr === "(") n++;
           return acc;
         }, "")
-        .replaceAll("\n", "")
+        .replace(/\n/g, "")
         .split(/,\s?(?![^(]*\))/)
         .map((f) => {
           try {
@@ -61,7 +61,7 @@ export class MySQLClient {
             const typeAndLength = nameAndType[1].replace(")", "").split("(");
 
             return {
-              name: nameAndType[0].replaceAll("`", ""),
+              name: nameAndType[0].replace(/`/g, ""),
               type: typeAndLength[0].toUpperCase(),
               length: typeAndLength[1] ? typeAndLength[1] : null,
               default: defaultValue,
