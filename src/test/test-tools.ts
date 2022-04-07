@@ -106,7 +106,7 @@ export async function dumpTest(
     fs.readFileSync(fileName, { encoding: "utf-8" })
   );
 
-  check(client2);
+  await check(client2);
 
   await client2.connection.destroy();
 }
