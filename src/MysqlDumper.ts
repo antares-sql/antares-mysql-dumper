@@ -8,9 +8,9 @@ import {
   SPATIAL,
   IS_MULTI_SPATIAL,
   NUMBER,
-} from "./fieldTypes";
-import hexToBinary from "./hexToBinary";
-import { getArrayDepth } from "./getArrayDepth";
+} from "./tools/fieldTypes";
+import hexToBinary from "./tools/hexToBinary";
+import { getArrayDepth } from "./tools/getArrayDepth";
 import moment from "moment";
 import { lineString, point, polygon } from "@turf/helpers";
 
