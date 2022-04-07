@@ -141,7 +141,7 @@ export class SqlDumper extends BaseDumper {
       }
     }
 
-    const footer = await this.getFooter();
+    const footer = await this.getSqlFooter();
     this.writeString(footer);
   }
 
@@ -153,24 +153,24 @@ export class SqlDumper extends BaseDumper {
   }
 
   async getSqlHeader() {
-    const serverVersion = await this.getServerVersion();
-    const header = `************************************************************
-Antares - SQL Client
-Version ${process.env.PACKAGE_VERSION}
-
-https://antares-sql.app/
-https://github.com/Fabio286/antares
-
-Version: ${serverVersion}
-Database: ${this.schemaName}
-Generation time: ${moment().format()}
-************************************************************`;
-
-    return this.buildComment(header);
+    if (this._options.getHeader) {
+      const serverVersion = await this.getServerVersion();
+      const header = this._options.getHeader({
+        serverVersion,
+        schema: this.schemaName,
+      });
+      if (header) {
+        return this.buildComment(header);
+      }
+    }
+    return "";
   }
 
-  async getFooter() {
-    return this.buildComment(`Dump completed on ${moment().format()}`);
+  async getSqlFooter() {
+    if (this._options.getFooter) {
+      return this.buildComment(this._options.getFooter());
+    }
+    return "";
   }
 
   getCreateTable(tableName) {

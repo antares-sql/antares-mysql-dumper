@@ -58,6 +58,9 @@ export interface MySqlDumperOptions {
   compress?: boolean;
   sqlInsertAfter?: number;
   sqlInsertDivider?: "rows" | "bytes";
+
+  getHeader?: ({ serverVersion, schema }) => string;
+  getFooter?: () => string;
 }
 ```
 

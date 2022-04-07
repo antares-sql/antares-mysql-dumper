@@ -38,8 +38,8 @@ SET NAMES utf8mb4;
     return dump;
   }
 
-  async getFooter() {
-    const footer = await super.getFooter();
+  async getSqlFooter() {
+    const footer = await super.getSqlFooter();
 
     return `/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
