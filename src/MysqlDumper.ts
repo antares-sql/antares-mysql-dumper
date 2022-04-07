@@ -381,16 +381,14 @@ ${footer}
 
   async _queryStream(sql) {
     if (process.env.NODE_ENV === "development") console.log("EXPORTER:", sql);
-    const isPool = typeof this._client._connection.getConnection === "function";
-    const connection = isPool
-      ? await this._client._connection.getConnection()
-      : this._client._connection;
-    const stream = connection.connection.query(sql).stream();
-    const dispose = () => connection.destroy();
+    const connection = this._client.connection;
+    const stream = connection.query(sql).stream();
+    // const dispose = () => connection.destroy();
+    // const dispose = () => {};
 
-    stream.on("end", dispose);
-    stream.on("error", dispose);
-    stream.on("close", dispose);
+    // stream.on("end", dispose);
+    // stream.on("error", dispose);
+    // stream.on("close", dispose);
     return stream;
   }
 

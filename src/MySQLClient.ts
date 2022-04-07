@@ -134,4 +134,27 @@ export class MySQLClient {
       });
     });
   }
+
+  async getVersion() {
+    const sql = 'SHOW VARIABLES LIKE "%vers%"';
+    const { rows } = await this.raw(sql);
+
+    return rows.reduce((acc, curr) => {
+      switch (curr.Variable_name) {
+        case "version":
+          acc.number = curr.Value.split("-")[0];
+          break;
+        case "version_comment":
+          acc.name = curr.Value.replace("(GPL)", "");
+          break;
+        case "version_compile_machine":
+          acc.arch = curr.Value;
+          break;
+        case "version_compile_os":
+          acc.os = curr.Value;
+          break;
+      }
+      return acc;
+    }, {});
+  }
 }

@@ -29,3 +29,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           result-file: result.json
           action-name: Run tests
+
+    services:
+      mysql:
+        image: mysql:8.0.18
+        env:
+          MYSQL_ROOT_PASSWORD: TestPwd

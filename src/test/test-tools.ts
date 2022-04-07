@@ -2,6 +2,7 @@ import crypto from "crypto";
 import mysql2 from "mysql2";
 import { splitQuery, mysqlSplitterOptions } from "dbgate-query-splitter";
 import { MysqlDumper } from "../MysqlDumper";
+import { MySQLClient } from "../MySQLClient";
 
 function randomDbName() {
   const generatedKey = crypto.randomBytes(6);
@@ -24,7 +25,7 @@ export async function script(connection, sql) {
   }
 }
 
-export async function createConnection() {
+export async function createClient(): Promise<MySQLClient> {
   const database = randomDbName();
   const options = {
     host: process.env.HOST || "mysql",
@@ -34,18 +35,20 @@ export async function createConnection() {
   };
   const connection = mysql2.createConnection(options);
   await query(connection, `CREATE DATABASE ${database}`);
+  connection.destroy();
+
   const dbConnection = mysql2.createConnection({
     ...options,
     database,
   });
-  dbConnection["__database_name"] = database;
-  return dbConnection;
+  const client = new MySQLClient(dbConnection, database);
+  return client;
 }
 
-export function dump(conn, outputFile) {
+export function dump(client: MySQLClient, outputFile) {
   return new Promise((resolve, reject) => {
     const dumper = new MysqlDumper(
-      conn,
+      client,
       [
         {
           table: "t1",
@@ -55,7 +58,7 @@ export function dump(conn, outputFile) {
         },
       ],
       {
-        schema: conn["__database_name"],
+        schema: client.schema,
         outputFile,
         includes: {
           views: true,
@@ -75,6 +78,6 @@ export function dump(conn, outputFile) {
     dumper.once("error", (err) => {
       reject(err);
     });
-    dumper.dump();
+    dumper.run();
   });
 }

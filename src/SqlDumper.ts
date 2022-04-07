@@ -12,12 +12,12 @@ export class SqlDumper extends BaseDumper {
   }
 
   get schemaName() {
-    return this._options.schema;
+    return this._client.schema;
   }
 
-  get host() {
-    return this._client._params.host;
-  }
+  // get host() {
+  //   return this._client._params.host;
+  // }
 
   async getServerVersion() {
     const version = await this._client.getVersion();
@@ -137,7 +137,7 @@ Version ${process.env.PACKAGE_VERSION}
 https://antares-sql.app/
 https://github.com/Fabio286/antares
 
-Host: ${this.host} (${serverVersion})
+Version: ${serverVersion}
 Database: ${this.schemaName}
 Generation time: ${moment().format()}
 ************************************************************`;
