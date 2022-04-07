@@ -60,3 +60,25 @@ export interface MySqlDumperOptions {
   sqlInsertDivider?: "rows" | "bytes";
 }
 ```
+
+## Testing package locally
+MySql Dumper is partially covered by integration tests. It is good idea to run these tests before pushing to GIT.
+Test requires MySQL server running at local machine, there is docker-compose file defining this.
+Every test run creates its own clean database, tests don't enfluence each other.
+
+Use following commands for integration testing:
+
+Start local MySQL server:
+```sh
+yarn dc:up
+```
+
+Run all tests:
+```sh
+yarn test
+```
+
+Stop local MySQL server
+```sh
+yarn dc:down
+```
