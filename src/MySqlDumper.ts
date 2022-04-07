@@ -70,7 +70,7 @@ ${footer}
 
   async loadTables(): Promise<string[]> {
     const { rows } = await this._client.raw(
-      `SELECT TABLE_NAME FROM information_schema.tables where TABLE_SCHEMA = \'${this.schemaName}\'`
+      `SELECT TABLE_NAME FROM information_schema.tables where TABLE_SCHEMA = \'${this.schemaName}\' AND TABLE_TYPE = 'BASE TABLE'`
     );
 
     return rows.map((x) => x.TABLE_NAME);
