@@ -2,10 +2,11 @@ import fs from "fs";
 import { createGzip } from "zlib";
 import path from "path";
 import EventEmitter from "events";
+import { MySqlDumperOptions } from "./MySqlDumperOptions";
 
 export class BaseDumper extends EventEmitter {
   _tables: any[];
-  _options: any;
+  _options: MySqlDumperOptions;
   _isCancelled: boolean;
   _outputFileStream: any;
   _processedStream: any;
@@ -22,11 +23,13 @@ export class BaseDumper extends EventEmitter {
     this._processedStream = null;
     this._state = {};
 
-    if (this._options.outputFormat === "sql.zip") {
+    if (this._options.compress) {
       const outputZipStream = createGzip();
       outputZipStream.pipe(this._outputFileStream);
       this._processedStream = outputZipStream;
-    } else this._processedStream = this._outputFileStream;
+    } else {
+      this._processedStream = this._outputFileStream;
+    }
 
     this._processedStream.once("error", (err) => {
       this._isCancelled = true;

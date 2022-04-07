@@ -1,6 +1,4 @@
-import mysql from "mysql2/promise";
-
-export class MySQLClient {
+export class MySqlClient {
   connection: any;
   schema: string;
 

@@ -2,8 +2,8 @@ import crypto from "crypto";
 import mysql2 from "mysql2";
 import fs from "fs";
 import { splitQuery, mysqlSplitterOptions } from "dbgate-query-splitter";
-import { MysqlDumper } from "../MysqlDumper";
-import { MySQLClient } from "../MySQLClient";
+import { MySqlDumper } from "../MySqlDumper";
+import { MySqlClient } from "../MySqlClient";
 
 function randomDbName() {
   const generatedKey = crypto.randomBytes(6);
@@ -32,7 +32,7 @@ export async function script(connection, sql) {
   }
 }
 
-export async function createClient(): Promise<MySQLClient> {
+export async function createClient(): Promise<MySqlClient> {
   const database = randomDbName();
   const options = {
     host: process.env.HOST || "mysql",
@@ -48,37 +48,28 @@ export async function createClient(): Promise<MySQLClient> {
     ...options,
     database,
   });
-  const client = new MySQLClient(dbConnection, database);
+  const client = new MySqlClient(dbConnection, database);
   return client;
 }
 
-export function dump(client: MySQLClient, outputFile) {
+export function dump(client: MySqlClient, outputFile) {
   return new Promise((resolve, reject) => {
-    const dumper = new MysqlDumper(
-      client,
-      [
-        {
-          table: "t1",
-          includeStructure: true,
-          includeContent: true,
-          includeDropStatement: true,
-        },
-      ],
-      {
-        schema: client.schema,
-        outputFile,
-        includes: {
-          views: true,
-          triggers: true,
-          routines: true,
-          functions: true,
-          schedulers: true,
-        },
-        outputFormat: "sql",
-        sqlInsertAfter: 250,
-        sqlInsertDivider: "bytes",
-      }
-    );
+    const dumper = new MySqlDumper({
+      connection: client.connection,
+      schema: client.schema,
+      outputFile,
+
+      // includes: {
+      //   views: true,
+      //   triggers: true,
+      //   routines: true,
+      //   functions: true,
+      //   schedulers: true,
+      // },
+      // compress: false,
+      // sqlInsertAfter: 250,
+      // sqlInsertDivider: "bytes",
+    });
     dumper.once("end", () => {
       resolve(true);
     });
@@ -91,7 +82,7 @@ export function dump(client: MySQLClient, outputFile) {
 
 export async function dumpTest(
   dataSql: string,
-  check: (client: MySQLClient) => Promise<void>
+  check: (client: MySqlClient) => Promise<void>
 ) {
   const fileName = randomFileName();
 

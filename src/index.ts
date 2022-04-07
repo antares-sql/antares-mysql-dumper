@@ -1,2 +1,2 @@
-export { MysqlDumper } from './MysqlDumper';
+export { MySqlDumper } from './MySqlDumper';
 

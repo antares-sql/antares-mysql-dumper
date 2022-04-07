@@ -11,10 +11,17 @@ import {
 } from "./tools/fieldTypes";
 import hexToBinary from "./tools/hexToBinary";
 import { getArrayDepth } from "./tools/getArrayDepth";
-import moment from "moment";
+import moment, { suppressDeprecationWarnings } from "moment";
 import { lineString, point, polygon } from "@turf/helpers";
+import { MySqlDumperOptions } from "./MySqlDumperOptions";
+import { MySqlClient } from "./MySqlClient";
 
-export class MysqlDumper extends SqlDumper {
+export class MySqlDumper extends SqlDumper {
+  constructor(options: MySqlDumperOptions) {
+    const client = new MySqlClient(options.connection, options.schema);
+    super(client, options.tables, options);
+  }
+
   async getSqlHeader() {
     let dump = await super.getSqlHeader();
     dump += `
@@ -61,6 +68,14 @@ ${footer}
     return `DROP TABLE IF EXISTS \`${tableName}\`;`;
   }
 
+  async loadTables(): Promise<string[]> {
+    const { rows } = await this._client.raw(
+      `SELECT TABLE_NAME FROM information_schema.tables where TABLE_SCHEMA = \'${this.schemaName}\'`
+    );
+
+    return rows.map((x) => x.TABLE_NAME);
+  }
+
   async *getTableInsert(tableName) {
     let rowCount = 0;
     let sqlStr = "";
@@ -74,7 +89,8 @@ ${footer}
       let queryLength = 0;
       let rowsWritten = 0;
       let rowIndex = 0;
-      const { sqlInsertDivider, sqlInsertAfter } = this._options;
+      const sqlInsertDivider = this._options.sqlInsertDivider || "rows";
+      const sqlInsertAfter = this._options.sqlInsertAfter || 250;
       const columns = await this._client.getTableColumns({
         table: tableName,
         schema: this.schemaName,

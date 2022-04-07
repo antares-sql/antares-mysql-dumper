@@ -1,11 +1,12 @@
 import moment from "moment";
 import { BaseDumper } from "./BaseDumper";
+import { MySqlDumperOptions } from "./MySqlDumperOptions";
 
 export class SqlDumper extends BaseDumper {
   _client: any;
   _commentChar: string;
 
-  constructor(client, tables, options) {
+  constructor(client, tables, options: MySqlDumperOptions) {
     super(tables, options);
     this._client = client;
     this._commentChar = "#";
@@ -24,8 +25,31 @@ export class SqlDumper extends BaseDumper {
     return `${version.name} ${version.number}`;
   }
 
+  async loadTables(): Promise<string[]> {
+    return [];
+  }
+
+  async ensureTables() {
+    if (!this._tables) {
+      this._tables = (await this.loadTables()).map((table) => ({
+        table,
+        includeStructure: true,
+        includeContent: true,
+        includeDropStatement: true,
+      }));
+    }
+  }
+
   async dump() {
-    const { includes } = this._options;
+    await this.ensureTables();
+
+    const includes = this._options.includes || {
+      views: true,
+      triggers: true,
+      routines: true,
+      functions: true,
+      schedulers: true,
+    };
     const extraItems = Object.keys(includes).filter((key) => includes[key]);
     const totalTableToProcess = this._tables.filter(
       (t) => t.includeStructure || t.includeContent || t.includeDropStatement
