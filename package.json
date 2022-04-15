@@ -25,7 +25,7 @@
     "dc:up": "cd src/test && docker-compose up -d",
     "dc:down": "cd src/test && docker-compose down",
     "test:ci": "jest --json --outputFile=result.json --testLocationInResults",
-    "postinstall": "yarn build"
+    "prepare": "yarn build"
   },
   "files": [
     "lib"
