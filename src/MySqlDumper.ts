@@ -226,20 +226,64 @@ ${footer}
     } else return point([points.x, points.y]);
   }
 
+  async getViewText(name) {
+    let sqlString = "";
+
+    const viewSyntax = await this.getCreateTable(name);
+    sqlString += viewSyntax.replace(
+      new RegExp("`" + this.schemaName + "`.", "g"),
+      ""
+    );
+    sqlString += "\n";
+
+    return sqlString;
+  }
+
   async getViews() {
     const { rows: views } = await this._client.raw(
       `SHOW TABLE STATUS FROM \`${this.schemaName}\` WHERE Comment = 'VIEW'`
     );
     let sqlString = "";
 
+    const viewTexts = {};
     for (const view of views) {
-      sqlString += `DROP VIEW IF EXISTS \`${view.Name}\`;\n`;
-      const viewSyntax = await this.getCreateTable(view.Name);
-      sqlString += viewSyntax.replace(
-        new RegExp("`" + this.schemaName + "`.", "g"),
-        ""
-      );
-      sqlString += "\n";
+      viewTexts[view.Name] = await this.getViewText(view.Name);
+    }
+
+    let viewsOrdered = [];
+    let viewsRest = views.map((x) => x.Name);
+
+    while (viewsRest.length > 0) {
+      let minima = null;
+      for (const candidate of viewsRest) {
+        let candidateOk = true;
+        for (const test of viewsRest) {
+          if (test == candidate) {
+            continue;
+          }
+          if (
+            viewTexts[candidate] &&
+            viewTexts[candidate].toUpperCase().includes(test.toUpperCase())
+          ) {
+            candidateOk = false;
+            break;
+          }
+        }
+        if (candidateOk) {
+          minima = candidate;
+          break;
+        }
+      }
+      if (minima == null) {
+        minima = viewsRest[0];
+      }
+      viewsOrdered = [...viewsOrdered, minima];
+      viewsRest = viewsRest.filter((x) => x != minima);
+    }
+
+    for (const view of viewsOrdered) {
+      sqlString += `DROP VIEW IF EXISTS \`${view}\`;\n`;
+      sqlString += viewTexts[view];
     }
 
     return sqlString;
@@ -383,7 +427,7 @@ ${footer}
       const startOffset = createProcedure.indexOf(type);
       const procedureBody = createProcedure.substring(startOffset);
 
-      sqlString += `/*!50003 DROP ${type} IF EXISTS ${name}*/;;\n`;
+      sqlString += `/*!50003 DROP ${type} IF EXISTS \`${name}\`*/;;\n`;
       sqlString += "/*!50003 SET @OLD_SQL_MODE=@@SQL_MODE*/;;\n";
       sqlString += `/*!50003 SET SQL_MODE="${sqlMode}"*/;;\n`;
       sqlString += "DELIMITER ;;\n";
