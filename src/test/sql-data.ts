@@ -17,3 +17,4 @@ export const VIEW = `
 
   CREATE VIEW v1 AS SELECT * FROM t1;
 `;
+

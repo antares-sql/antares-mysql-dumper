@@ -1,3 +1,4 @@
+import fs from "fs";
 import { MORE_TABLES, SIMPLE, VIEW } from "./sql-data";
 import { dumpTest } from "./test-tools";
 
@@ -51,6 +52,22 @@ test("Export view", async () => {
         expect.objectContaining({
           id: 1,
           value: 2,
+        }),
+      ])
+    );
+  });
+});
+
+test("Northwind test", async () => {
+  const sql = fs.readFileSync("src/test/northwind.sql", { encoding: "utf-8" });
+  await dumpTest(sql, async (client) => {
+    const res = await client.raw("select * from `Category Sales for 1997` where CategoryName='Beverages'");
+
+    expect(res.rows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          CategoryName: 'Beverages',
+          CategorySales: 108545,
         }),
       ])
     );
